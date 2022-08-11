@@ -1,0 +1,17 @@
+---
+title: "Project Script"
+output: html_notebook
+---
+
+This script loads in, cleans, and analyzes our project data from the course. 
+
+Roadmap: 
+
+0. Load in packages, metadata, and batch-processed file
+1. Clean batch-processed file according to John's tutorial
+2. Qualitatively compare to manual file for aster and lupine
+3. Append manual file to the end of the cleaned batch file
+4. Re-run cleaning to get final output file 
+5. Visually check output file with built-in graphics
+6. Run statistics on final output file
+7. Create visuals for presentation
