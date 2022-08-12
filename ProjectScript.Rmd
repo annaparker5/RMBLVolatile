@@ -31,11 +31,30 @@ library(ggplot2)
 
 ```{r}
 metadata <- read.csv("~/Desktop/GitHub/RMBLVolatile/Data/metadata.csv", header = TRUE)
+
+metadata <- load_metadata(metadata, sample = "file_name", date = "date", group = c("species", "replicate"), type = "sample_type", amount = "mass")
+
 ```
 
 ```{r}
 source("read_shimadzu.R")
 output <- read.shimadzu("~/Desktop/GitHub/RMBLVolatile/Data/Batchrun2.txt")
+
+longdata <- load_longdata(output, sample = "Filename", RT = "Ret.Time", 
+                          name = "Name", area = "Area", 
+                          match = "SI", maxmatch=100)
+
+longdataclean <- longdata %>%
+  select(sample, RT, name, area, match)
+
 ```
+
+
+# 1. Clean batch file! 
+
+```{r}
+chemtable <- make_chemtable(longdataclean, metadata)
+```
+
 
 
