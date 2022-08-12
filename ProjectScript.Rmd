@@ -32,7 +32,7 @@ library(ggplot2)
 ```{r}
 metadata <- read.csv("~/Desktop/GitHub/RMBLVolatile/Data/metadata.csv", header = TRUE)
 
-metadata <- load_metadata(metadata, sample = "file_name", date = "date", group = c("species", "replicate"), type = "sample_type", amount = "mass")
+metadata <- load_metadata(metadata, sample = "file_name", date = "ambient.date", group = c("species", "replicate"), type = "sample_type", amount = "mass")
 
 ```
 
@@ -52,9 +52,27 @@ longdataclean <- longdata %>%
 
 # 1. Clean batch file! 
 
+## Make sampletable
+
+```{r}
+sampletable <- make_sampletable(longdataclean, metadata)
+```
+
+
+## Make chemtable
+
 ```{r}
 chemtable <- make_chemtable(longdataclean, metadata)
 ```
 
+## Filter out round 1
 
+```{r}
+chemtable <- chemtable %>%
+  filter_freq(0.66, group = TRUE) %>%
+  filter_area(min_maximum = 5e5) %>%
+  filter_ambient_date(chemtable, sampletable, ratio = 3, prop_dates = 1)
+```
+
+## Look at filters
 
