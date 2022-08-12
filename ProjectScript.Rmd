@@ -30,8 +30,12 @@ library(ggplot2)
 ```
 
 ```{r}
-metadata <- read.csv(~/Desktop/)
+metadata <- read.csv("~/Desktop/GitHub/RMBLVolatile/Data/metadata.csv", header = TRUE)
 ```
 
+```{r}
+source("read_shimadzu.R")
+output <- read.shimadzu("~/Desktop/GitHub/RMBLVolatile/Data/Batchrun2.txt")
+```
 
 
