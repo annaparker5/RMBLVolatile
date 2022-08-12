@@ -1,0 +1,11 @@
+﻿,Plant,Ret.Time,Proc.From,Proc.To,Mass,Area,Height,A/H,Conc.,Mark,Name,Clean Name,Class,Relative Concnetration ,Mass,Adjust for weight (ng/hr),Is this floral?,,,Hexanol,5298796
+1,3,4.412,4.36,4.47,TIC,865685,447073,1.94,4.89,MI ,"Butyl aldoxime, 2-methyl-, syn-", 2.methyl.Butyl.aldoxime,AM,3.138740006,0.0919,34.15386296,YES!! In fabaeceae,,,,
+2,3,5.438,5.41,5.505,TIC,220666,92763,2.38,1.25,MI ,"Cyclopentanone, 2-methyl-",2.methyl.Cyclopentanone,KY,0.800075318,0.0919,8.705933825,YES!! In fabaeceae,,,,
+3,3,5.945,5.9,6,TIC,2060177,1215000,1.7,11.64,MI ,"Formic acid, hexyl ester",Formic.acid,ES,7.469645389,0.0919,81.28014569,Maybe ,,,,
+4,3,7.219,7.19,7.255,TIC,260042,155578,1.67,1.47,MI ,"Cyclopentanone, 2-ethyl-",2.ethyl.cyclopentanone,KY,0.94284206,0.0919,10.25943482,Maybe - 2-methyl has been ,,,,
+5,3,8.135,8.11,8.18,TIC,284060,184653,1.54,1.61,MI ,.beta.-Myrcene,b.myrcene,MT,1.029924841,0.0919,11.20701677,Yes ,,,,
+6,3,8.818,8.795,8.855,TIC,373074,217540,1.71,2.11,MI ,D-limonene,d.limonene,MT,1.352665564,0.0919,14.71888535,Yes,,,,
+7,3,8.925,8.895,8.97,TIC,1293720,840156,1.54,7.31,MI ,trans-.beta.-Ocimene,trans.b.ocimene,MT,4.690679312,0.0919,51.04112418,Yes,,,,
+8,3,9.104,9.07,9.15,TIC,1754830,1128858,1.55,9.92,MI ,.beta.-Ocimene,cis.b.ocimene,MT,6.362539635,0.0919,69.23329309,Yes,,,,
+9,3,10.417,10.395,10.44,TIC,145570,101815,1.43,0.82,MI ,Neo-allo-ocimene,neo.allo.ocimene,MT,0.527797504,0.0919,5.743171974,Yes,,,,
+10,3,10.456,10.44,10.49,TIC,80548,52868,1.52,0.46,MI ,Carveol,carveol,AL,0.456035673,0.0919,4.962303297,Maybe? In asters,,,,

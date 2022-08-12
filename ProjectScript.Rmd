@@ -8,6 +8,7 @@ This script loads in, cleans, and analyzes our project data from the course.
 Roadmap: 
 
 0. Load in packages, metadata, and batch-processed file
+0.5 Replace known names in batch-processed file
 1. Clean batch-processed file according to John's tutorial
 2. Qualitatively compare to manual file for aster and lupine
 3. Visually check output file with built-in graphics
@@ -27,6 +28,7 @@ remotes::install_github("jmpowers/bouquet", build_vignettes = TRUE)
 library(tidyverse)
 library(bouquet)
 library(ggplot2)
+library(vegan)
 ```
 
 ```{r}
@@ -50,6 +52,60 @@ longdataclean <- longdata %>%
 
 ```
 
+# 0.5. DON'T USE: Replace known names and emission rates in longdataclean
+
+```{r}
+manualAst <- read.csv("~/Desktop/GitHub/RMBLVolatile/Data/manualAst.csv", header = TRUE)
+manualLup <- read.csv("~/Desktop/GitHub/RMBLVolatile/Data/manualLup.csv", header = TRUE)
+```
+
+```{r}
+manualAst <- manualAst %>%
+  select(Ret.Time = Ret.Time, New.Name = Name, Em.Rate = X.1)
+
+manualLup <- manualLup %>%
+  select(Ret.Time = Ret.Time, New.Name = Name, Em.Rate = Adjust.for.weight..ng.hr.)
+```
+
+```{r}
+longdataclean <- merge(longdataclean, manualAst, by.x = "RT", by.y = "Ret.Time", all.x = TRUE)
+longdataclean <- merge(longdataclean, manualLup, by.x = "RT", by.y = "Ret.Time", all.x = TRUE)
+
+longdataclean<- longdataclean %>%
+  unite("New.Name", c("New.Name.x", "New.Name.y"), remove = TRUE , na.rm = TRUE)
+
+longdataclean<- longdataclean %>%
+  unite("Em.Rate", c("Em.Rate.x", "Em.Rate.y"), remove = TRUE, na.rm = TRUE)
+
+```
+
+## Get scaled emission rates for every peak in longdataclean
+
+```{r}
+longdataclean$Em.Rate.New <- 0
+
+for(i in 1:length(longdataclean$RT)){
+  if(longdataclean[i, 2] == "Aster1_floral_ALP.qgd"){
+    longdataclean[i, 8] <- (30/(8274196/ longdataclean[i, 4])) / 0.686
+  }
+  else if(longdataclean[i, 2] == "Aster2_floral_AFM.qgd"){
+    longdataclean[i, 8] <- (30/(8274196/ longdataclean[i, 4])) / 0.686 
+  } 
+  else if(longdataclean[i, 2] == "Aster3_floral_AFM.qgd"){
+    longdataclean[i, 8] <- (30/(8274196/ longdataclean[i, 4])) / 0.690
+  }
+  else if(longdataclean[i, 2] == "Lupine1_floral_AFM.qgd"){
+    longdataclean[i, 8] <- (30/(8274196/ longdataclean[i, 4])) / 1.025
+  }
+  else if(longdataclean[i, 2] == "Lupine2_floral_ALP.qgd"){
+    longdataclean[i, 8] <- (30/(8274196/ longdataclean[i, 4])) / 0.558
+  } 
+  else if(longdataclean[i, 2] == "Lupine3_floral_ALP.qgd"){
+    longdataclean[i, 8] <- (30/(8274196/ longdataclean[i, 4])) / 0.919
+  }
+}
+```
+
 
 # 1. Clean batch file! 
 
@@ -69,11 +125,15 @@ chemtable <- make_chemtable(longdataclean, metadata)
 ## Filter out round 1
 
 ```{r}
+#contaminants <- c("Tetratriacontane", "Tetratetracontane", "Tetradecanoic acid", "Tetracosane", "Silanediol, dimethyl-", "Phthalic acid, 7-bromoheptyl butyl ester", "Phosphonic acid, (p-hydroxyphenyl)-", "Pentadecanal-", "Pentacontanoic acid, ethyl ester", "Oxybenzone", "n-Tridecan-1-ol", "n-Tetracosanol-1", "n-Pentadecanol", "n-Nonadecanol-1", "n-Heptadecanol-1", "Methyl stearate", "Hexanoic acid")
+
 chemtable <- chemtable %>%
   filter_freq(0.66, group = TRUE) %>%
+  filter_RT(4, 18) %>%
   filter_area(min_maximum = 5e5) %>%
- # filter_ambient_ratio(sampletable, metadata, ratio = 3)
-  filter_ambient_date(sampletable, metadata, ratio = 4, prop_dates = .1)
+  filter_ambient_ratio(sampletable, metadata, ratio = 3) %>%
+ #filter_contaminant(cont.list = contaminants) %>%
+  filter_ambient_date(sampletable, metadata, ratio = 3, prop_dates = .1)
 ```
 
 ## Make preliminary final filter
@@ -83,7 +143,7 @@ chemtable <- chemtable %>%
   combine_filters() %>% 
   within(filter_final <- 
               ((filter_freq.Heliomeris_multiflora == "OK" | filter_freq.Lupinus_argenteus == "OK")
-               & filter_area == "OK" & filter_ambient_date == "OK"))
+               & filter_area == "OK" & filter_ambient_date == "OK" & filter_RT == "OK" & filter_ambient_ratio == "OK"))
 
 ```
 
@@ -101,4 +161,84 @@ plot_filters(chemtable, option = "rarity", yrange=2.5, fontsize=2.5, pointsize=1
 ```{r}
 plot_filters(chemtable, option = "ambient", yrange=4, pointsize=6)
 ```
+
+## Subset final dataset by filter values 
+
+```{r}
+finaltable <- prune_sampletable(sampletable, chemtable, metadata)
+finalmetadata <- subset(metadata, type == "floral")
+
+write.csv(file = "~/Desktop/GitHub/RMBLVolatile/Data/finaltable.csv", finaltable)
+```
+
+# 4. Run statistics
+
+```{r}
+permanova <- adonis2(finaltable ~ species, data = finalmetadata)
+
+permanova
+
+cap <- capscale(finaltable ~ species, data = finalmetadata, 
+                 distance = "bray")
+```
+
+# 5. Graphing
+
+
+```{r}
+plot(cap, type = "n", 
+     main = paste("CAP of", ncol(finaltable), "volatiles in", 
+                  nrow(finaltable), "samples vs. species"))
+legend("bottomright", levels(finalmetadata$species), 
+       col = 2:5, pch = 19, title = "Species")
+points(cap, col = as.integer(finalmetadata$species)+1, pch = 19)
+text(cap, display = "species", col="grey50")
+text(cap, display = "cn", labels=levels(finalmetadata$species))
+
+```
+
+
+```{r}
+heatmap(as.matrix(finaltable)^(1/4), 
+        scale = "none", distfun = vegdist,
+        cexCol = 1, margins = c(15, 0), labRow = NA,
+        col=colorRampPalette(c("white","darkblue"))(256),
+        RowSideColors = as.character(as.integer(finalmetadata$species)+1))
+legend("bottomleft", levels(finalmetadata$species), title = "Species",
+       col = 2:5, pch = 19, inset=c(0,-0.2),  xpd=T)
+```
+
+
+# SECTION 2: Rerun with just the ones that we IDed from our individuals
+
+```{r}
+longdatapruned <- longdataclean[longdataclean$New.Name != "", ]
+```
+
+**Retention times were not close enough to do this thing between runs** 
+
+Instead, we are going to combine the manual datafiles and make a pretty graph from those. 
+
+## Make a new datafile with the correct column names
+
+```{r}
+manualAst2 <- read.csv("~/Desktop/GitHub/RMBLVolatile/Data/manualAst.csv", header = TRUE)
+manualLup2 <- read.csv("~/Desktop/GitHub/RMBLVolatile/Data/manualLup.csv", header = TRUE)
+
+manualAst2$Sample <- "Aster1_floral_ALP.qgd"
+manualLup2$Sample <- "Lupine3_floral_ALP.qgd"
+manualAst2$match <- 1
+manualLup2$match <- 1
+
+manualAst2 <- manualAst2 %>%
+  select(RT = Ret.Time, sample = Sample, name = Name, area = X.1, match = match)
+
+manualLup2 <- manualLup2 %>%
+  select(RT = Ret.Time, sample = Sample, name = Name, area = Adjust.for.weight..ng.hr., match = match)
+
+newlongdata <- rbind(manualAst2, manualLup2)
+```
+
+
+
 
