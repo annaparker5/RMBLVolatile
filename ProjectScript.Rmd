@@ -197,15 +197,24 @@ text(cap, display = "cn", labels=levels(finalmetadata$species))
 
 ```
 
+```{r}
+heatmap(as.matrix(finaltable)^(1/4), 
+        scale = "none", distfun = vegdist,
+        cexCol = 1, margins = c(15, 0), labRow = NA,
+        col=colorRampPalette(c("white","darkblue"))(256),
+        RowSideColors = as.character(as.integer(finalmetadata$species) + 1))
+legend("bottomleft", levels(finalmetadata$species), title = "Species",
+       col = 2:4, pch = 19, inset=c(0,-0.2),  xpd=T)
+```
 
 ```{r}
 heatmap(as.matrix(finaltable)^(1/4), 
         scale = "none", distfun = vegdist,
         cexCol = 1, margins = c(15, 0), labRow = NA,
         col=colorRampPalette(c("white","darkblue"))(256),
-        RowSideColors = as.character(as.integer(finalmetadata$species)+1))
-legend("bottomleft", levels(finalmetadata$species), title = "Species",
-       col = 2:5, pch = 19, inset=c(0,-0.2),  xpd=T)
+        RowSideColors = as.character(as.integer(finalmetadata$replicate)))
+legend("bottomleft", levels(finalmetadata$replicate), title = "Replicate",
+       col = 1:6, pch = 19, inset=c(0,-0.2),  xpd=T)
 ```
 
 
@@ -231,14 +240,44 @@ manualAst2$match <- 1
 manualLup2$match <- 1
 
 manualAst2 <- manualAst2 %>%
-  select(RT = Ret.Time, sample = Sample, name = Name, area = X.1, match = match)
+  select(RT = Ret.Time, sample = Sample, name = Clean.Name, area = X.1, match = match)
 
 manualLup2 <- manualLup2 %>%
-  select(RT = Ret.Time, sample = Sample, name = Name, area = Adjust.for.weight..ng.hr., match = match)
+  select(RT = Ret.Time, sample = Sample, name = Clean.Name, area = Adjust.for.weight..ng.hr., match = match)
 
 newlongdata <- rbind(manualAst2, manualLup2)
+
+newlongdata <- load_longdata(newlongdata, sample = "sample", RT = "RT", 
+                          name = "name", area = "area", 
+                          match = "match", maxmatch=1)
+
+
+#newlongdata$name <- as.factor(newlongdata$name)
+```
+
+```{r}
+newmetadata <- metadata[c(2, 10), ]
+
+newmetadata <- load_metadata(newmetadata, sample = "sample", date = "date", group ="species", type = "type", amount = "amount")
 ```
 
 
+```{r}
+sampletablemanual <- make_sampletable(newlongdata, newmetadata)
 
+#chemtablemanual <- make_chemtable(newlongdata, newmetadata)
+
+#finaltablemanual <- prune_sampletable(sampletablemanual, chemtablemanual, newmetadata)
+```
+
+
+```{r}
+heatmap(as.matrix(sampletablemanual)^(1/4), 
+        scale = "none", distfun = vegdist,
+        cexCol = 1, margins = c(15, 0), labRow = NA,
+        col=colorRampPalette(c("white","darkblue"))(256),
+        RowSideColors = as.character(as.integer(newmetadata$species)+1))
+legend("bottomleft", levels(newmetadata$species), title = "Species",
+       col = 2:4, pch = 19, inset=c(0,-0.2),  xpd=T)
+```
 
